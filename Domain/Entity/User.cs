@@ -9,11 +9,17 @@ namespace Domain.Entity
     public class User
     {
         public int Id { get; set; }
-        public string AdSoyad { get; set; }
-        public string Email { get; set; }
-        public string SifreHash { get; set; }
-        public string Rol { get; set; } // User, Staff, Admin
+        public string FullName { get; set; } = null!;
+        public string Email { get; set; } = null!;
+        public string PasswordHash { get; set; } = null!;
+        public string Role { get; set; } = null!; // Admin, Personel, Vatandaş
+
+        // Hangi departmana ait olduğu
         public int? DepartmentId { get; set; }
-        public Department Department { get; set; }
+        public Department? Department { get; set; }
+
+        // İlişkiler
+        public ICollection<Complaint>? Complaints { get; set; }
+        public ICollection<Assignment>? Assignments { get; set; }
     }
 }
