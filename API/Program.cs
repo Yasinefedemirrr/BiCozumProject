@@ -3,20 +3,19 @@ using Persistance.Context;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// DbContext konfigürasyonu
+// DbContext
 builder.Services.AddDbContext<BiCozumContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("SqlConnection")));
 
-// Controller servisi
+// Controller
 builder.Services.AddControllers();
 
-// Swagger / OpenAPI
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Development ortamýnda Swagger aktif et
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
