@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Persistance.Context;
+using Persistance.ServiceRegistration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +10,7 @@ builder.Services.AddDbContext<BiCozumContext>(options =>
 
 // Controller
 builder.Services.AddControllers();
-
+builder.Services.AddPersistenceServices();
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
