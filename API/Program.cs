@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Persistance.Context;
+using Persistance;
+using MediatR;
+using Application.Features.Commands.ComplaintCommands;
 using Persistance.ServiceRegistration;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,15 +11,24 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<BiCozumContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("SqlConnection")));
 
+// Repository servisleri
+builder.Services.AddPersistenceServices();
+
+// MediatR register
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(typeof(CreateComplaintCommand).Assembly)
+);
+
 // Controller
 builder.Services.AddControllers();
-builder.Services.AddPersistenceServices();
+
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// Swagger UI
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -24,9 +36,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
