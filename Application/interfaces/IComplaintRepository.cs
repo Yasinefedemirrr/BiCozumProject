@@ -12,5 +12,8 @@ namespace Application.interfaces
     {
         Task<List<Complaint>> GetByDepartmentAsync(int departmentId);
         Task<List<Complaint>> GetByUserAsync(int userId);
+        Task<List<Complaint>> GetAllWithIncludesAsync();
+        Task<Complaint?> GetByIdWithIncludesAsync(int id);
+
     }
 }
