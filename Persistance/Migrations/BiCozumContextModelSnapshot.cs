@@ -199,7 +199,7 @@ namespace Persistance.Migrations
                     b.HasOne("Domain.Entity.User", "User")
                         .WithMany("Complaints")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Department");

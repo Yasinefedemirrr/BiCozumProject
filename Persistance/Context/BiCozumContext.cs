@@ -32,7 +32,7 @@ namespace Persistance.Context
                 .HasOne(c => c.User)
                 .WithMany(u => u.Complaints)
                 .HasForeignKey(c => c.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Complaint -> Department (1-N)
             modelBuilder.Entity<Complaint>()
