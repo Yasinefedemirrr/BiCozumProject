@@ -30,5 +30,21 @@ namespace Persistance.Repositories
                 .Where(c => c.UserId == userId)
                 .ToListAsync();
         }
+
+        public async Task<List<Complaint>> GetAllWithIncludesAsync()
+        {
+            return await _context.Complaints
+                .Include(c => c.Department)
+                .Include(c => c.User)
+                .ToListAsync();
+        }
+
+        public async Task<Complaint?> GetByIdWithIncludesAsync(int id)
+        {
+            return await _context.Complaints
+                .Include(c => c.Department)
+                .Include(c => c.User)
+                .FirstOrDefaultAsync(c => c.Id == id);
+        }
     }
 }
