@@ -10,5 +10,7 @@ namespace Application.interfaces
     public interface IComplaintHistoryRepository : IRepository<ComplaintHistory>
     {
         Task<List<ComplaintHistory>> GetByComplaintAsync(int complaintId);
+        Task<List<ComplaintHistory>> GetAllWithIncludesAsync();
+        Task<ComplaintHistory?> GetByIdWithIncludesAsync(int id);
     }
 }

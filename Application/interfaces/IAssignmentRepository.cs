@@ -11,5 +11,7 @@ namespace Application.interfaces
     {
         Task<List<Assignment>> GetByComplaintAsync(int complaintId);
         Task<List<Assignment>> GetByUserAsync(int userId);
+        Task<List<Assignment>> GetAllWithIncludesAsync();
+        Task<Assignment?> GetByIdWithIncludesAsync(int id);
     }
 }
