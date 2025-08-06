@@ -21,6 +21,11 @@ namespace Persistance.Repositories
             _dbSet = _context.Set<T>();
         }
 
+        public IQueryable<T> GetAll()
+        {
+            return _dbSet.AsQueryable();
+        }
+
         public virtual async Task<List<T>> GetAllAsync()
         {
             return await _dbSet.ToListAsync();

@@ -9,6 +9,7 @@ namespace Application.interfaces
 {
     public interface IRepository<T> where T : class
     {
+        IQueryable<T> GetAll(); 
         Task<List<T>> GetAllAsync();
         Task<T?> GetByIdAsync(int id);
         Task AddAsync(T entity);
@@ -16,4 +17,5 @@ namespace Application.interfaces
         Task DeleteAsync(T entity);
         Task<List<T>> FindAsync(Expression<Func<T, bool>> predicate);
     }
+
 }
