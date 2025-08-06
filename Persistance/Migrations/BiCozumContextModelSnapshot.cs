@@ -174,7 +174,7 @@ namespace Persistance.Migrations
                     b.HasOne("Domain.Entity.Complaint", "Complaint")
                         .WithMany("Assignments")
                         .HasForeignKey("ComplaintId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Domain.Entity.User", "User")
@@ -193,7 +193,7 @@ namespace Persistance.Migrations
                     b.HasOne("Domain.Entity.Department", "Department")
                         .WithMany("Complaints")
                         .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Domain.Entity.User", "User")
@@ -212,7 +212,7 @@ namespace Persistance.Migrations
                     b.HasOne("Domain.Entity.Complaint", "Complaint")
                         .WithMany("ComplaintHistories")
                         .HasForeignKey("ComplaintId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Complaint");
