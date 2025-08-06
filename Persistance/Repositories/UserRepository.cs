@@ -23,12 +23,29 @@ namespace Persistance.Repositories
         {
             return await _context.Users
                 .Where(u => u.DepartmentId == departmentId)
+                .Include(u => u.Department)
                 .ToListAsync();
         }
 
         public async Task<User?> GetByEmailAsync(string email)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            return await _context.Users
+                .Include(u => u.Department)
+                .FirstOrDefaultAsync(u => u.Email == email);
+        }
+
+        public async Task<List<User>> GetAllWithIncludesAsync()
+        {
+            return await _context.Users
+                .Include(u => u.Department)
+                .ToListAsync();
+        }
+
+        public async Task<User?> GetByIdWithIncludesAsync(int id)
+        {
+            return await _context.Users
+                .Include(u => u.Department)
+                .FirstOrDefaultAsync(u => u.Id == id);
         }
     }
 
