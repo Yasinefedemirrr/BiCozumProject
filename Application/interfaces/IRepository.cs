@@ -16,6 +16,7 @@ namespace Application.interfaces
         Task UpdateAsync(T entity);
         Task DeleteAsync(T entity);
         Task<List<T>> FindAsync(Expression<Func<T, bool>> predicate);
+        Task<T?> GetByFilterAsync(Expression<Func<T, bool>> filter);
     }
 
 }
