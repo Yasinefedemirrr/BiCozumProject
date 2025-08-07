@@ -15,7 +15,7 @@ namespace Application.Tools
 
     public class JwtTokenGenerator
     {
-        public static TokenResponseDto GenerateToken(GetCheckAppUserQueryResult result)
+        public static TokenResponseDto GenerateToken(GetCheckUserQueryResult result)
         {
             var claims = new List<Claim>();
 
