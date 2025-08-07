@@ -10,6 +10,6 @@ namespace Domain.Entity
     {
         public int AppRoleId { get; set; }
         public string AppRoleName { get; set; }
-        public List<AppUser> Users { get; set; }
+        public List<User> Users { get; set; }
     }
 }

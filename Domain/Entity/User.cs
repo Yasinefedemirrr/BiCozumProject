@@ -10,15 +10,18 @@ namespace Domain.Entity
     {
         public int Id { get; set; }
         public string FullName { get; set; } = null!;
-        public string Email { get; set; } = null!;
+        public string Username { get; set; } = null!;
         public string PasswordHash { get; set; } = null!;
-        public string Role { get; set; } = null!; // Admin, Personel, Vatandaş
 
-        // Hangi departmana ait olduğu
+        public int AppRoleId { get; set; }
+        public AppRole AppRole { get; set; }
+
+        public string? RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpireDate { get; set; }
+
         public int? DepartmentId { get; set; }
         public Department? Department { get; set; }
 
-        // İlişkiler
         public ICollection<Complaint>? Complaints { get; set; }
         public ICollection<Assignment>? Assignments { get; set; }
     }
