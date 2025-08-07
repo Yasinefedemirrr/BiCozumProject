@@ -27,8 +27,7 @@ namespace Application.Features.Handlers.UserHandlers
             {
                 Id = u.Id,
                 FullName = u.FullName,
-                Email = u.Email,
-                Role = u.Role,
+                Role = u.AppRole?.AppRoleName ?? "",
                 DepartmentName = u.Department?.Name ?? ""
             }).ToList();
         }

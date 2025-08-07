@@ -22,15 +22,14 @@ namespace Application.Features.Handlers.UserHandlers
         public async Task<GetUserByIdResult> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
         {
             var user = await _userRepository.GetByIdWithIncludesAsync(request.Id);
-
             if (user == null) return null;
 
             return new GetUserByIdResult
             {
                 Id = user.Id,
                 FullName = user.FullName,
-                Email = user.Email,
-                Role = user.Role,
+                Email = user.Username,
+                Role = user.AppRole?.AppRoleName ?? "",
                 DepartmentName = user.Department?.Name ?? ""
             };
         }
