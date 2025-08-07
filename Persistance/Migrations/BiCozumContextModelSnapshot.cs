@@ -39,39 +39,6 @@ namespace Persistance.Migrations
                     b.ToTable("AppRoles");
                 });
 
-            modelBuilder.Entity("Domain.Entity.AppUser", b =>
-                {
-                    b.Property<int>("AppUserId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AppUserId"));
-
-                    b.Property<int>("AppRoleId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RefreshToken")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("RefreshTokenExpireDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("AppUserId");
-
-                    b.HasIndex("AppRoleId");
-
-                    b.ToTable("AppUsers");
-                });
-
             modelBuilder.Entity("Domain.Entity.Assignment", b =>
                 {
                     b.Property<int>("Id")
@@ -193,12 +160,11 @@ namespace Persistance.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("DepartmentId")
+                    b.Property<int>("AppRoleId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("DepartmentId")
+                        .HasColumnType("int");
 
                     b.Property<string>("FullName")
                         .IsRequired()
@@ -208,26 +174,23 @@ namespace Persistance.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Role")
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("RefreshTokenExpireDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AppRoleId");
+
                     b.HasIndex("DepartmentId");
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("Domain.Entity.AppUser", b =>
-                {
-                    b.HasOne("Domain.Entity.AppRole", "AppRole")
-                        .WithMany("Users")
-                        .HasForeignKey("AppRoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AppRole");
                 });
 
             modelBuilder.Entity("Domain.Entity.Assignment", b =>
@@ -281,10 +244,18 @@ namespace Persistance.Migrations
 
             modelBuilder.Entity("Domain.Entity.User", b =>
                 {
+                    b.HasOne("Domain.Entity.AppRole", "AppRole")
+                        .WithMany("Users")
+                        .HasForeignKey("AppRoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Domain.Entity.Department", "Department")
                         .WithMany("Users")
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("AppRole");
 
                     b.Navigation("Department");
                 });

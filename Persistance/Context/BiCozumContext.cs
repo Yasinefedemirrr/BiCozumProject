@@ -15,7 +15,6 @@ namespace Persistance.Context
         public DbSet<Complaint> Complaints { get; set; }
         public DbSet<Assignment> Assignments { get; set; }
         public DbSet<ComplaintHistory> ComplaintHistories { get; set; }
-        public DbSet<AppUser> AppUsers { get; set; }
         public DbSet<AppRole> AppRoles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -65,7 +64,7 @@ namespace Persistance.Context
                 .OnDelete(DeleteBehavior.Cascade);
 
             // AppUser -> AppRole (Cascade)
-            modelBuilder.Entity<AppUser>()
+            modelBuilder.Entity<User>()
                 .HasOne(u => u.AppRole)
                 .WithMany(r => r.Users)
                 .HasForeignKey(u => u.AppRoleId)
