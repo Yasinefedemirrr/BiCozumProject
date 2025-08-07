@@ -1,5 +1,6 @@
 ﻿using Application.Features.Commands.UserCommands;
 using Application.interfaces;
+using Application.Tools;
 using Domain.Entity;
 using MediatR;
 using System;
@@ -21,12 +22,17 @@ namespace Application.Features.Handlers.UserHandlers
 
         public async Task<int> Handle(CreateUserCommand request, CancellationToken cancellationToken)
         {
+            var role = await _userRepository.GetRoleByNameAsync(request.Role);
+
+            if (role == null)
+                throw new Exception("Geçerli bir rol bulunamadı.");
+
             var user = new User
             {
                 FullName = request.FullName,
-                Email = request.Email,
-                PasswordHash = request.PasswordHash,
-                Role = request.Role,
+                Username = request.Email,
+                PasswordHash = request.PasswordHash, // Direkt olarak gelen şifre
+                AppRoleId = role.AppRoleId,
                 DepartmentId = request.DepartmentId
             };
 

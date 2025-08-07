@@ -23,10 +23,16 @@ namespace Application.Features.Handlers.UserHandlers
             var user = await _userRepository.GetByIdAsync(request.Id);
             if (user != null)
             {
+                var role = await _userRepository.GetRoleByNameAsync(request.Role); // Rol nesnesini çekiyoruz
+                if (role == null)
+                {
+                    throw new Exception("Belirtilen rol bulunamadı.");
+                }
+
                 user.FullName = request.FullName;
-                user.Email = request.Email;
+                user.Username = request.Email;
                 user.PasswordHash = request.PasswordHash;
-                user.Role = request.Role;
+                user.AppRoleId = role.AppRoleId; // Doğrudan ID atanır
                 user.DepartmentId = request.DepartmentId;
 
                 await _userRepository.UpdateAsync(user);
