@@ -10,6 +10,6 @@ namespace Application.interfaces
 {
     public interface IAppUserRepository
     {
-        Task<List<AppUser>> GetByFilterAsync(Expression<Func<AppUser, bool>> filter);
+        Task<List<User>> GetByFilterAsync(Expression<Func<User, bool>> filter);
     }
 }

@@ -13,5 +13,6 @@ namespace Application.interfaces
         Task<User?> GetByEmailAsync(string email);
         Task<List<User>> GetAllWithIncludesAsync();
         Task<User?> GetByIdWithIncludesAsync(int id);
+        Task<AppRole?> GetRoleByNameAsync(string roleName);
     }
 }
