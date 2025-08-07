@@ -17,7 +17,7 @@ namespace Persistance.Repositories
         {
             _context = context;
         }
-        public Task<List<AppUser>> GetByFilterAsync(Expression<Func<AppUser, bool>> filter)
+        public Task<List<User>> GetByFilterAsync(Expression<Func<User, bool>> filter)
         {
             throw new NotImplementedException();
         }

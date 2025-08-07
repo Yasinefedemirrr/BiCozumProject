@@ -31,13 +31,14 @@ namespace Persistance.Repositories
         {
             return await _context.Users
                 .Include(u => u.Department)
-                .FirstOrDefaultAsync(u => u.Email == email);
+                .FirstOrDefaultAsync(u => u.Username == email); // Username'e göre kontrol ettim
         }
 
         public async Task<List<User>> GetAllWithIncludesAsync()
         {
             return await _context.Users
                 .Include(u => u.Department)
+                .Include(u => u.AppRole)
                 .ToListAsync();
         }
 
@@ -45,7 +46,13 @@ namespace Persistance.Repositories
         {
             return await _context.Users
                 .Include(u => u.Department)
+                .Include(u => u.AppRole)
                 .FirstOrDefaultAsync(u => u.Id == id);
+        }
+
+        public async Task<AppRole?> GetRoleByNameAsync(string roleName)
+        {
+            return await _context.AppRoles.FirstOrDefaultAsync(r => r.AppRoleName == roleName);
         }
     }
 
