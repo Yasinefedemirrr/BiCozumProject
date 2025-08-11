@@ -36,7 +36,7 @@ namespace Persistance.Migrations
 
                     b.HasKey("AppRoleId");
 
-                    b.ToTable("AppRoles");
+                    b.ToTable("AppRoles", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entity.Assignment", b =>
@@ -66,7 +66,7 @@ namespace Persistance.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Assignments");
+                    b.ToTable("Assignments", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entity.Complaint", b =>
@@ -104,7 +104,7 @@ namespace Persistance.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Complaints");
+                    b.ToTable("Complaints", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entity.ComplaintHistory", b =>
@@ -132,7 +132,7 @@ namespace Persistance.Migrations
 
                     b.HasIndex("ComplaintId");
 
-                    b.ToTable("ComplaintHistories");
+                    b.ToTable("ComplaintHistories", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entity.Department", b =>
@@ -149,7 +149,7 @@ namespace Persistance.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Departments");
+                    b.ToTable("Departments", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entity.User", b =>
@@ -190,7 +190,7 @@ namespace Persistance.Migrations
 
                     b.HasIndex("DepartmentId");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entity.Assignment", b =>
