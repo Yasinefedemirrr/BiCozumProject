@@ -1,0 +1,371 @@
+@model List<WebUI.Models.AdminComplaintViewModel>
+@{
+    ViewData["Title"] = "Tüm Talepler";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-list-alt me-2"></i>Tüm Talepler
+                    </h4>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary" id="filterAll">
+                            <i class="fas fa-list me-1"></i>Tümü
+                        </button>
+                        <button type="button" class="btn btn-outline-warning" id="filterPending">
+                            <i class="fas fa-clock me-1"></i>Bekleyen
+                        </button>
+                        <button type="button" class="btn btn-outline-info" id="filterAssigned">
+                            <i class="fas fa-user-plus me-1"></i>Atanan
+                        </button>
+                        <button type="button" class="btn btn-outline-success" id="filterCompleted">
+                            <i class="fas fa-check me-1"></i>Tamamlanan
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (Model != null && Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover datatable" id="complaintsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Talep No</th>
+                                        <th>Başlık</th>
+                                        <th>Vatandaş</th>
+                                        <th>Müdürlük</th>
+                                        <th>Durum</th>
+                                        <th>Atanan Personel</th>
+                                        <th>Tarih</th>
+                                        <th>Son Güncelleme</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var complaint in Model)
+                                    {
+                                        <tr data-status="@complaint.Status.ToLower()">
+                                            <td>
+                                                <span class="badge bg-secondary">#@complaint.Id</span>
+                                            </td>
+                                            <td>
+                                                <strong>@complaint.Title</strong>
+                                                <br>
+                                                <small class="text-muted">@(complaint.Description.Length > 50 ? complaint.Description.Substring(0, 50) + "..." : complaint.Description)</small>
+                                            </td>
+                                            <td>
+                                                <i class="fas fa-user me-1"></i>
+                                                @complaint.UserFullName
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">@complaint.DepartmentName</span>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var statusClass = complaint.Status switch
+                                                    {
+                                                        "Beklemede" => "bg-warning",
+                                                        "Atandı" => "bg-info",
+                                                        "Tamamlandı" => "bg-success",
+                                                        "İptal" => "bg-danger",
+                                                        _ => "bg-secondary"
+                                                    };
+                                                }
+                                                <span class="badge @statusClass">@complaint.Status</span>
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(complaint.AssignedPersonnel))
+                                                {
+                                                    <i class="fas fa-user-tie me-1"></i>
+                                                    @complaint.AssignedPersonnel
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <i class="fas fa-calendar-alt me-1"></i>
+                                                @complaint.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                                            </td>
+                                            <td>
+                                                @if (complaint.LastUpdate.HasValue)
+                                                {
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    @complaint.LastUpdate.Value.ToString("dd.MM.yyyy HH:mm")
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="#" class="btn btn-sm btn-outline-primary" 
+                                                       data-bs-toggle="tooltip" 
+                                                       title="Detayları Görüntüle">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    @if (complaint.Status == "Talep Alındı")
+                                                    {
+                                                        <button type="button" class="btn btn-sm btn-outline-success" 
+                                                                data-bs-toggle="modal" 
+                                                                data-bs-target="#assignModal" 
+                                                                data-complaint-id="@complaint.Id"
+                                                                data-complaint-title="@complaint.Title"
+                                                                data-bs-toggle="tooltip" 
+                                                                title="Personel Ata">
+                                                            <i class="fas fa-user-plus"></i>
+                                                        </button>
+                                                    }
+                                                    @if (complaint.Status == "Personel Atandı")
+                                                    {
+                                                        <button type="button" class="btn btn-sm btn-outline-info" 
+                                                                data-bs-toggle="modal" 
+                                                                data-bs-target="#progressModal" 
+                                                                data-complaint-id="@complaint.Id"
+                                                                data-bs-toggle="tooltip" 
+                                                                title="İlerleme Onayla">
+                                                            <i class="fas fa-chart-line"></i>
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                            <h5 class="text-muted">Henüz talep bulunmuyor</h5>
+                            <p class="text-muted">Vatandaşlar tarafından oluşturulan talepler burada görünecektir.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- İstatistikler -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <div class="dashboard-card text-center">
+                    <div class="card-icon">
+                        <i class="fas fa-list"></i>
+                    </div>
+                    <div class="card-number">@Model.Count</div>
+                    <div class="card-title">Toplam Talep</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card text-center">
+                    <div class="card-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="card-number">@Model.Count(c => c.Status == "Beklemede")</div>
+                    <div class="card-title">Bekleyen</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card text-center">
+                    <div class="card-icon">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div class="card-number">@Model.Count(c => c.Status == "Atandı")</div>
+                    <div class="card-title">Atanan</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card text-center">
+                    <div class="card-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="card-number">@Model.Count(c => c.Status == "Tamamlandı")</div>
+                    <div class="card-title">Tamamlanan</div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Personel Atama Modal -->
+<div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assignModalLabel">Personel Ata</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="assignForm" method="post" action="@Url.Action("AssignPersonnel", "Admin")">
+                <div class="modal-body">
+                    <input type="hidden" id="complaintId" name="ComplaintId" />
+                    <div class="mb-3">
+                        <label for="complaintTitle" class="form-label">Talep Başlığı</label>
+                        <input type="text" class="form-control" id="complaintTitle" readonly />
+                    </div>
+                    <div class="mb-3">
+                        <label for="userId" class="form-label">Personel Seçin</label>
+                        <select class="form-select" id="userId" name="UserId" required>
+                            <option value="">Personel seçin...</option>
+                            <option value="13">Test Personnel - Bilgi İşlem</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-user-plus me-1"></i>Personel Ata
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- İlerleme Onaylama Modal -->
+<div class="modal fade" id="progressModal" tabindex="-1" aria-labelledby="progressModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="progressModalLabel">İlerleme Onaylama</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Talep Durumu</label>
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">75%</div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Son Güncelleme</label>
+                    <p class="text-muted">Son güncelleme bilgisi burada görünecek</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-success" onclick="approveProgress()">
+                    <i class="fas fa-check me-1"></i>Onayla
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // DataTable initialization - destroy existing instance first
+            if ($.fn.DataTable.isDataTable('#complaintsTable')) {
+                $('#complaintsTable').DataTable().destroy();
+            }
+            
+            var table = $('#complaintsTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/tr.json'
+                },
+                responsive: true,
+                pageLength: 25,
+                order: [[6, 'desc']], // Sort by date descending
+                columnDefs: [
+                    {
+                        targets: -1,
+                        orderable: false,
+                        searchable: false
+                    }
+                ]
+            });
+            
+            // Filter buttons
+            $('#filterAll').click(function() {
+                table.column(4).search('').draw();
+                updateActiveFilter($(this));
+            });
+            
+            $('#filterPending').click(function() {
+                table.column(4).search('beklemede').draw();
+                updateActiveFilter($(this));
+            });
+            
+            $('#filterAssigned').click(function() {
+                table.column(4).search('atandı').draw();
+                updateActiveFilter($(this));
+            });
+            
+            $('#filterCompleted').click(function() {
+                table.column(4).search('tamamlandı').draw();
+                updateActiveFilter($(this));
+            });
+            
+            function updateActiveFilter(activeButton) {
+                $('.btn-group .btn').removeClass('active');
+                activeButton.addClass('active');
+            }
+            
+            // Status color animation
+            $('.badge').each(function() {
+                $(this).addClass('fade-in');
+            });
+            
+            // Set initial active filter
+            $('#filterAll').addClass('active');
+            
+            // Modal event handlers
+            $('#assignModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var complaintId = button.data('complaint-id');
+                var complaintTitle = button.data('complaint-title');
+                
+                $('#complaintId').val(complaintId);
+                $('#complaintTitle').val(complaintTitle);
+            });
+            
+            $('#progressModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var complaintId = button.data('complaint-id');
+                
+                // Store complaint ID for approve function
+                $('#progressModal').data('complaint-id', complaintId);
+            });
+        });
+        
+        function approveProgress() {
+            var complaintId = $('#progressModal').data('complaint-id');
+            
+            // Show confirmation
+            Swal.fire({
+                title: 'İlerlemeyi Onayla',
+                text: 'Bu talebin ilerlemesini onaylamak istediğinizden emin misiniz?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Evet, Onayla',
+                cancelButtonText: 'İptal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Submit form
+                    var form = $('<form method="post" action="@Url.Action("ApproveProgress", "Admin")"></form>');
+                    form.append('<input type="hidden" name="assignmentId" value="' + complaintId + '" />');
+                    $('body').append(form);
+                    form.submit();
+                }
+            });
+        }
+    </script>
+} 
