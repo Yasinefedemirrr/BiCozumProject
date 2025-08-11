@@ -1,0 +1,186 @@
+@model List<WebUI.Models.AssignmentViewModel>
+@{
+    ViewData["Title"] = "Atanan Taleplerim";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-tasks me-2"></i>Atanan Taleplerim
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (Model != null && Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover datatable">
+                                <thead>
+                                    <tr>
+                                        <th>Atama No</th>
+                                        <th>Talep Başlığı</th>
+                                        <th>Müdürlük</th>
+                                        <th>İlerleme Durumu</th>
+                                        <th>Atanma Tarihi</th>
+                                        <th>Son Güncelleme</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var assignment in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <span class="badge bg-secondary">#@assignment.Id</span>
+                                            </td>
+                                            <td>
+                                                <strong>@assignment.ComplaintTitle</strong>
+                                                <br>
+                                                <small class="text-muted">@(assignment.ComplaintDescription.Length > 50 ? assignment.ComplaintDescription.Substring(0, 50) + "..." : assignment.ComplaintDescription)</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">@assignment.DepartmentName</span>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var progressClass = assignment.Progress switch
+                                                    {
+                                                        "Atandı" => "bg-info",
+                                                        "İnceleniyor" => "bg-warning",
+                                                        "Test Ediliyor" => "bg-primary",
+                                                        "Tamamlandı" => "bg-success",
+                                                        "İptal" => "bg-danger",
+                                                        _ => "bg-secondary"
+                                                    };
+                                                }
+                                                <span class="badge @progressClass">@assignment.Progress</span>
+                                            </td>
+                                            <td>
+                                                <i class="fas fa-calendar-alt me-1"></i>
+                                                @assignment.AssignedAt.ToString("dd.MM.yyyy HH:mm")
+                                            </td>
+                                            <td>
+                                                @if (assignment.LastUpdate.HasValue)
+                                                {
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    @assignment.LastUpdate.Value.ToString("dd.MM.yyyy HH:mm")
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="@Url.Action("Details", new { id = assignment.Id })" 
+                                                       class="btn btn-sm btn-outline-primary" 
+                                                       data-bs-toggle="tooltip" 
+                                                       title="Detayları Görüntüle">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="@Url.Action("UpdateProgress", new { id = assignment.Id })" 
+                                                       class="btn btn-sm btn-outline-success" 
+                                                       data-bs-toggle="tooltip" 
+                                                       title="İlerleme Güncelle">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-clipboard-list fa-4x text-muted mb-3"></i>
+                            <h5 class="text-muted">Henüz atanan talep bulunmuyor</h5>
+                            <p class="text-muted">Admin tarafından size atanan talepler burada görünecektir.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- İstatistikler -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <div class="dashboard-card text-center">
+                    <div class="card-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="card-number">@Model.Count</div>
+                    <div class="card-title">Toplam Atama</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card text-center">
+                    <div class="card-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="card-number">@Model.Count(a => a.Progress == "Atandı")</div>
+                    <div class="card-title">Yeni Atanan</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card text-center">
+                    <div class="card-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <div class="card-number">@Model.Count(a => a.Progress == "İnceleniyor" || a.Progress == "Test Ediliyor")</div>
+                    <div class="card-title">İşlemde</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card text-center">
+                    <div class="card-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="card-number">@Model.Count(a => a.Progress == "Tamamlandı")</div>
+                    <div class="card-title">Tamamlanan</div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // DataTable initialization
+            $('.datatable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/tr.json'
+                },
+                responsive: true,
+                pageLength: 10,
+                order: [[4, 'desc']], // Sort by assignment date descending
+                columnDefs: [
+                    {
+                        targets: -1,
+                        orderable: false,
+                        searchable: false
+                    }
+                ]
+            });
+            
+            // Status color animation
+            $('.badge').each(function() {
+                $(this).addClass('fade-in');
+            });
+        });
+    </script>
+} 
