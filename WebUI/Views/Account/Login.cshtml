@@ -9,7 +9,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - BiCozum Belediye</title>
+    <title>@ViewData["Title"] - BiÇözüm</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -19,20 +19,233 @@
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    
+    <style>
+        :root {
+            --primary-color: #28a745;
+            --primary-hover: #218838;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --light-green: #d4edda;
+            --border-green: #c3e6cb;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f8fff9 0%, #e8f5e8 50%, #d4edda 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(40, 167, 69, 0.1);
+            border: 2px solid var(--border-green);
+            max-width: 400px;
+            width: 100%;
+            overflow: hidden;
+            animation: slideInUp 0.6s ease-out;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+            color: white;
+            padding: 1.5rem 1.5rem 1rem;
+            text-align: center;
+        }
+        
+        .card-header i {
+            color: white;
+            margin-bottom: 1rem;
+        }
+        
+        .card-header h2 {
+            color: white;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+                 .card-header .subtitle {
+             color: rgba(255, 255, 255, 0.9);
+             font-size: 0.9rem;
+             margin-bottom: 0;
+         }
+         
+         .card-header .subtitle.belediye {
+             color: #90EE90;
+             font-size: 1rem;
+             font-weight: 600;
+             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+         }
+         
+         .card-body .subtitle {
+             color: var(--primary-color);
+             font-size: 0.9rem;
+             margin-bottom: 0;
+             font-weight: 500;
+         }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .form-label {
+            color: #495057;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+        
+        .btn-outline-success {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            border-radius: 10px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-success:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+        
+        .input-group .btn {
+            border: 2px solid #e9ecef;
+            border-left: none;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .input-group .form-control {
+            border-right: none;
+            border-radius: 10px 0 0 10px;
+        }
+        
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .alert-success {
+            background: var(--light-green);
+            color: #155724;
+        }
+        
+        .divider {
+            text-align: center;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+        
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e9ecef;
+        }
+        
+        .divider span {
+            background: white;
+            padding: 0 1rem;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .register-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            border: 1px solid #e9ecef;
+        }
+        
+        .register-section h5 {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .register-section p {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        
+        .slideInUp {
+            animation: slideInUp 0.6s ease-out;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease-in;
+        }
+    </style>
 </head>
 <body>
     <div class="login-container">
         <div class="login-card">
-            <div class="card-header">
-                <div class="text-center mb-4">
-                    <i class="fas fa-city fa-3x text-primary mb-3"></i>
-                    <h2 class="fw-bold">BiCozum Belediye</h2>
-                    <p class="text-muted">Talep ve Şikayet Yönetim Sistemi</p>
-                </div>
-            </div>
+                         <div class="card-header">
+                 <div class="text-center">
+                     <i class="fas fa-city fa-3x mb-3"></i>
+                     <h2 class="fw-bold">BiÇözüm</h2>
+                     <p class="subtitle belediye">Bahçelievler Belediyesi</p>
+                 </div>
+             </div>
             
-            <div class="card-body">
-                @if (TempData["Error"] != null)
+                         <div class="card-body">
+                 <div class="text-center mb-3">
+                     <p class="subtitle">Çözüm, Öneri ve Talep Platformuna Hoşgeldiniz!</p>
+                 </div>
+                 
+                 @if (TempData["Error"] != null)
                 {
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
                         <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
@@ -40,6 +253,15 @@
                     </div>
                 }
                 
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                
+                <!-- Login Form -->
                 <form asp-action="Login" method="post" id="loginForm">
                     <div class="mb-3">
                         <label for="Username" class="form-label">
@@ -76,12 +298,88 @@
                     </div>
                 </form>
                 
+                <!-- Divider -->
+                <div class="divider">
+                    <span>veya</span>
+                </div>
+                
+                <!-- Register Section -->
+                <div class="register-section">
+                    <h5><i class="fas fa-user-plus me-2"></i>Yeni Kullanıcı mısınız?</h5>
+                    <p>Hızlıca kayıt olun ve taleplerinizi oluşturmaya başlayın.</p>
+                    <div class="d-grid">
+                        <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#registerModal">
+                            <i class="fas fa-user-plus me-2"></i>Kayıt Ol
+                        </button>
+                    </div>
+                </div>
+                
                 <div class="text-center mt-4">
                     <p class="text-muted mb-0">
                         <i class="fas fa-info-circle me-1"></i>
                         Sorun yaşıyorsanız sistem yöneticisi ile iletişime geçiniz.
                     </p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%); color: white;">
+                    <h5 class="modal-title" id="registerModalLabel">
+                        <i class="fas fa-user-plus me-2"></i>Yeni Kullanıcı Kaydı
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="registerForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="registerFullName" class="form-label">
+                                <i class="fas fa-user me-2"></i>Ad Soyad
+                            </label>
+                            <input type="text" class="form-control" id="registerFullName" name="fullName" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="registerUsername" class="form-label">
+                                <i class="fas fa-at me-2"></i>Kullanıcı Adı
+                            </label>
+                            <input type="text" class="form-control" id="registerUsername" name="username" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="registerPassword" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Şifre
+                            </label>
+                            <input type="password" class="form-control" id="registerPassword" name="password" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="registerConfirmPassword" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Şifre Tekrar
+                            </label>
+                            <input type="password" class="form-control" id="registerConfirmPassword" name="confirmPassword" required>
+                        </div>
+                        
+                        
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="registerTerms" required>
+                            <label class="form-check-label" for="registerTerms">
+                                <a href="#" class="text-decoration-none">Kullanım şartlarını</a> kabul ediyorum.
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-user-plus me-2"></i>Kayıt Ol
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -109,7 +407,7 @@
                 }
             });
             
-            // Form validation
+            // Login form validation
             $('#loginForm').submit(function(e) {
                 const username = $('#Username').val().trim();
                 const password = $('#Password').val().trim();
@@ -120,7 +418,7 @@
                         icon: 'warning',
                         title: 'Uyarı!',
                         text: 'Lütfen tüm alanları doldurunuz.',
-                        confirmButtonColor: '#3085d6'
+                        confirmButtonColor: '#28a745'
                     });
                     return false;
                 }
@@ -135,10 +433,114 @@
                     }
                 });
                 
-                // Form submit olacak, SweetAlert açık kalacak
-                // Controller'dan response geldiğinde sayfa yönlendirilecek
                 return true;
             });
+            
+            // Register form validation and submission
+            $('#registerForm').submit(function(e) {
+                e.preventDefault();
+                
+                                 const fullName = $('#registerFullName').val().trim();
+                 const username = $('#registerUsername').val().trim();
+                 const password = $('#registerPassword').val();
+                 const confirmPassword = $('#registerConfirmPassword').val();
+                 const terms = $('#registerTerms').is(':checked');
+                
+                // Validation
+                if (!fullName || !username || !password || !confirmPassword) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Uyarı!',
+                        text: 'Lütfen tüm zorunlu alanları doldurunuz.',
+                        confirmButtonColor: '#28a745'
+                    });
+                    return false;
+                }
+                
+                if (password !== confirmPassword) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Hata!',
+                        text: 'Şifreler eşleşmiyor.',
+                        confirmButtonColor: '#28a745'
+                    });
+                    return false;
+                }
+                
+                if (password.length < 6) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Uyarı!',
+                        text: 'Şifre en az 6 karakter olmalıdır.',
+                        confirmButtonColor: '#28a745'
+                    });
+                    return false;
+                }
+                
+                if (!terms) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Uyarı!',
+                        text: 'Kullanım şartlarını kabul etmelisiniz.',
+                        confirmButtonColor: '#28a745'
+                    });
+                    return false;
+                }
+                
+                // Show loading
+                Swal.fire({
+                    title: 'Kayıt yapılıyor...',
+                    text: 'Lütfen bekleyiniz',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                                 // Submit registration
+                 const formData = {
+                     fullName: fullName,
+                     username: username,
+                     password: password
+                 };
+                
+                $.ajax({
+                    url: '/Account/Register',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Başarılı!',
+                                text: response.message,
+                                confirmButtonColor: '#28a745'
+                            }).then(() => {
+                                $('#registerModal').modal('hide');
+                                $('#registerForm')[0].reset();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Hata!',
+                                text: response.message,
+                                confirmButtonColor: '#28a745'
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Hata!',
+                            text: 'Kayıt işlemi sırasında bir hata oluştu.',
+                            confirmButtonColor: '#28a745'
+                        });
+                    }
+                });
+            });
+            
+            
             
             // Add animation
             $('.login-card').addClass('fade-in');

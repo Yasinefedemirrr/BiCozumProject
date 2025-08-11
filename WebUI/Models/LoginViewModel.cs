@@ -24,4 +24,23 @@ namespace WebUI.Models
         public string FullName { get; set; }
         public string Department { get; set; }
     }
+
+    public class RegisterViewModel
+    {
+        [Required(ErrorMessage = "Ad Soyad zorunludur")]
+        [Display(Name = "Ad Soyad")]
+        public string FullName { get; set; }
+
+        [Required(ErrorMessage = "Kullanıcı adı zorunludur")]
+        [Display(Name = "Kullanıcı Adı")]
+        public string Username { get; set; }
+
+        [Required(ErrorMessage = "Şifre zorunludur")]
+        [Display(Name = "Şifre")]
+        [DataType(DataType.Password)]
+        [MinLength(6, ErrorMessage = "Şifre en az 6 karakter olmalıdır")]
+        public string Password { get; set; }
+
+
+    }
 } 

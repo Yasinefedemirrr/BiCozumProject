@@ -115,6 +115,52 @@ namespace WebUI.Controllers
             return RedirectToAction("Login");
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Register([FromBody] RegisterViewModel model)
+        {
+            try
+            {
+                // Validation
+                if (string.IsNullOrEmpty(model.FullName) || string.IsNullOrEmpty(model.Username) || string.IsNullOrEmpty(model.Password))
+                {
+                    return Json(new { success = false, message = "Tüm alanları doldurunuz." });
+                }
+
+                // Username kontrolü
+                var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == model.Username);
+                if (existingUser != null)
+                {
+                    return Json(new { success = false, message = "Bu kullanıcı adı zaten kullanılıyor." });
+                }
+
+                // User rolünü bul (AppRoleId = 2)
+                var userRole = await _context.AppRoles.FirstOrDefaultAsync(r => r.AppRoleId == 2);
+                if (userRole == null)
+                {
+                    return Json(new { success = false, message = "Sistem hatası: User rolü bulunamadı." });
+                }
+
+                // Yeni kullanıcı oluştur
+                var newUser = new User
+                {
+                    FullName = model.FullName,
+                    Username = model.Username,
+                    PasswordHash = model.Password, // Gerçek uygulamada hash'lenmeli
+                    AppRoleId = 2, // User rolü
+                    DepartmentId = null // Yeni kayıtlarda müdürlük yok
+                };
+
+                _context.Users.Add(newUser);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = "Kayıt başarıyla tamamlandı! Artık giriş yapabilirsiniz." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Kayıt işlemi sırasında bir hata oluştu: " + ex.Message });
+            }
+        }
+
         [HttpGet]
         public IActionResult Profile()
         {
