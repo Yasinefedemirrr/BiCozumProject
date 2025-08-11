@@ -1,0 +1,195 @@
+@model List<WebUI.Models.ComplaintViewModel>
+@{
+    ViewData["Title"] = "Taleplerim";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Taleplerim
+                    </h4>
+                    <a href="@Url.Action("Create")" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Yeni Talep
+                    </a>
+                </div>
+                <div class="card-body">
+                    @if (Model != null && Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover datatable">
+                                <thead>
+                                    <tr>
+                                        <th>Talep No</th>
+                                        <th>Başlık</th>
+                                        <th>Müdürlük</th>
+                                        <th>Durum</th>
+                                        <th>Tarih</th>
+                                        <th>Son Güncelleme</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var complaint in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <span class="badge bg-secondary">#@complaint.Id</span>
+                                            </td>
+                                            <td>
+                                                <strong>@complaint.Title</strong>
+                                                <br>
+                                                <small class="text-muted">@(complaint.Description.Length > 50 ? complaint.Description.Substring(0, 50) + "..." : complaint.Description)</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">@complaint.DepartmentName</span>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var statusClass = complaint.Status switch
+                                                    {
+                                                        "Beklemede" => "bg-warning",
+                                                        "Atandı" => "bg-info",
+                                                        "Tamamlandı" => "bg-success",
+                                                        "İptal" => "bg-danger",
+                                                        _ => "bg-secondary"
+                                                    };
+                                                }
+                                                <span class="badge @statusClass">@complaint.Status</span>
+                                            </td>
+                                            <td>
+                                                <i class="fas fa-calendar-alt me-1"></i>
+                                                @complaint.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                                            </td>
+                                            <td>
+                                                @if (complaint.LastUpdate.HasValue)
+                                                {
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    @complaint.LastUpdate.Value.ToString("dd.MM.yyyy HH:mm")
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="@Url.Action("Details", new { id = complaint.Id })" 
+                                                       class="btn btn-sm btn-outline-primary" 
+                                                       data-bs-toggle="tooltip" 
+                                                       title="Detayları Görüntüle">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    @if (complaint.Status == "Beklemede")
+                                                    {
+                                                        <button class="btn btn-sm btn-outline-danger btn-delete" 
+                                                                data-url="@Url.Action("Delete", new { id = complaint.Id })"
+                                                                data-item-name="Bu talebi"
+                                                                data-bs-toggle="tooltip" 
+                                                                title="Talebi İptal Et">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                            <h5 class="text-muted">Henüz talep oluşturmamışsınız</h5>
+                            <p class="text-muted">İlk talebinizi oluşturmak için aşağıdaki butona tıklayınız.</p>
+                            <a href="@Url.Action("Create")" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>İlk Talebimi Oluştur
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- İstatistikler -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <div class="dashboard-card text-center">
+                    <div class="card-icon">
+                        <i class="fas fa-list"></i>
+                    </div>
+                    <div class="card-number">@Model.Count</div>
+                    <div class="card-title">Toplam Talep</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card text-center">
+                    <div class="card-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="card-number">@Model.Count(c => c.Status == "Beklemede")</div>
+                    <div class="card-title">Bekleyen</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card text-center">
+                    <div class="card-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <div class="card-number">@Model.Count(c => c.Status == "Atandı")</div>
+                    <div class="card-title">İşlemde</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card text-center">
+                    <div class="card-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="card-number">@Model.Count(c => c.Status == "Tamamlandı")</div>
+                    <div class="card-title">Tamamlanan</div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // DataTable initialization
+            $('.datatable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/tr.json'
+                },
+                responsive: true,
+                pageLength: 10,
+                order: [[4, 'desc']], // Sort by date descending
+                columnDefs: [
+                    {
+                        targets: -1,
+                        orderable: false,
+                        searchable: false
+                    }
+                ]
+            });
+            
+            // Status color animation
+            $('.badge').each(function() {
+                $(this).addClass('fade-in');
+            });
+        });
+    </script>
+} 
