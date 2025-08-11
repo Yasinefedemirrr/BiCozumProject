@@ -97,9 +97,11 @@ namespace WebUI.Controllers
                     ComplaintId = assignment.ComplaintId,
                     ComplaintTitle = assignment.Complaint.Title,
                     ComplaintDescription = assignment.Complaint.Description,
+                    ComplaintCreatedAt = assignment.Complaint.CreatedAt,
                     DepartmentName = assignment.Complaint.Department?.Name ?? "Bilinmeyen Müdürlük",
                     Progress = assignment.Progress,
                     AssignedAt = assignment.AssignedAt,
+                    Status = assignment.Complaint.Status,
                     UserFullName = assignment.User.FullName
                 };
 
@@ -153,13 +155,15 @@ namespace WebUI.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateProgress(AssignmentUpdateViewModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
             try
             {
+                // Validation
+                if (string.IsNullOrEmpty(model.NewProgress))
+                {
+                    ModelState.AddModelError("NewProgress", "Yeni durum seçimi zorunludur!");
+                    return View(model);
+                }
+
                 // Get assignment from database
                 var assignment = await _context.Assignments
                     .Include(a => a.Complaint)
@@ -167,8 +171,8 @@ namespace WebUI.Controllers
 
                 if (assignment == null)
                 {
-                    ModelState.AddModelError("", "Atama bulunamadı!");
-                    return View(model);
+                    TempData["Error"] = "Atama bulunamadı!";
+                    return RedirectToAction("MyAssignments");
                 }
 
                 // Update assignment progress
@@ -177,6 +181,9 @@ namespace WebUI.Controllers
                 // Update complaint status based on progress
                 switch (model.NewProgress)
                 {
+                    case "Atandı":
+                        assignment.Complaint.Status = "Personel Atandı";
+                        break;
                     case "İnceleniyor":
                         assignment.Complaint.Status = "İnceleniyor";
                         break;
@@ -186,17 +193,23 @@ namespace WebUI.Controllers
                     case "Tamamlandı":
                         assignment.Complaint.Status = "İşlem Tamamlandı";
                         break;
+                    default:
+                        assignment.Complaint.Status = "Personel Atandı";
+                        break;
                 }
+
+                // Update assignment time
+                assignment.AssignedAt = DateTime.Now;
 
                 await _context.SaveChangesAsync();
 
-                TempData["Success"] = "İlerleme durumu başarıyla güncellendi!";
+                TempData["Success"] = $"İlerleme durumu başarıyla '{model.NewProgress}' olarak güncellendi!";
                 return RedirectToAction("MyAssignments");
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", "İlerleme durumu güncellenirken bir hata oluştu: " + ex.Message);
-                return View(model);
+                TempData["Error"] = "İlerleme durumu güncellenirken bir hata oluştu: " + ex.Message;
+                return RedirectToAction("MyAssignments");
             }
         }
     }

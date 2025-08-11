@@ -175,19 +175,14 @@ namespace WebUI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AssignPersonnel(AssignPersonnelViewModel model)
+        public async Task<IActionResult> AssignPersonnel(int complaintId, int userId)
         {
-            if (!ModelState.IsValid)
-            {
-                return RedirectToAction("Complaints");
-            }
-
             try
             {
                 // Get complaint from database
                 var complaint = await _context.Complaints
                     .Include(c => c.Department)
-                    .FirstOrDefaultAsync(c => c.Id == model.ComplaintId);
+                    .FirstOrDefaultAsync(c => c.Id == complaintId);
 
                 if (complaint == null)
                 {
@@ -198,7 +193,7 @@ namespace WebUI.Controllers
                 // Get personnel from database
                 var personnel = await _context.Users
                     .Include(u => u.Department)
-                    .FirstOrDefaultAsync(u => u.Id == model.UserId);
+                    .FirstOrDefaultAsync(u => u.Id == userId);
 
                 if (personnel == null)
                 {
@@ -206,16 +201,30 @@ namespace WebUI.Controllers
                     return RedirectToAction("Complaints");
                 }
 
-                // Create assignment
-                var assignment = new Assignment
-                {
-                    ComplaintId = model.ComplaintId,
-                    UserId = model.UserId,
-                    AssignedAt = DateTime.Now,
-                    Progress = "Atandı"
-                };
+                // Check if assignment already exists
+                var existingAssignment = await _context.Assignments
+                    .FirstOrDefaultAsync(a => a.ComplaintId == complaintId);
 
-                _context.Assignments.Add(assignment);
+                if (existingAssignment != null)
+                {
+                    // Update existing assignment
+                    existingAssignment.UserId = userId;
+                    existingAssignment.AssignedAt = DateTime.Now;
+                    existingAssignment.Progress = "Atandı";
+                }
+                else
+                {
+                    // Create new assignment
+                    var assignment = new Assignment
+                    {
+                        ComplaintId = complaintId,
+                        UserId = userId,
+                        AssignedAt = DateTime.Now,
+                        Progress = "Atandı"
+                    };
+
+                    _context.Assignments.Add(assignment);
+                }
 
                 // Update complaint status
                 complaint.Status = "Personel Atandı";

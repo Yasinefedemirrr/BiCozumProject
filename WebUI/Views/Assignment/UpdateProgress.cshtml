@@ -1,0 +1,98 @@
+@model WebUI.Models.AssignmentUpdateViewModel
+@{
+    ViewData["Title"] = "İlerleme Güncelle";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>İlerleme Güncelle
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="UpdateProgress" method="post">
+                        <input type="hidden" asp-for="AssignmentId" />
+                        <input type="hidden" asp-for="ComplaintId" />
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Mevcut Durum:</label>
+                                    <div class="form-control-plaintext">
+                                        <span class="badge bg-secondary">@Model.CurrentProgress</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label asp-for="NewProgress" class="form-label fw-bold">Yeni Durum:</label>
+                                    <select asp-for="NewProgress" class="form-select" required>
+                                        <option value="">Durum seçin...</option>
+                                        <option value="Atandı">Atandı</option>
+                                        <option value="İnceleniyor">İnceleniyor</option>
+                                        <option value="Test Ediliyor">Test Ediliyor</option>
+                                        <option value="Tamamlandı">Tamamlandı</option>
+                                    </select>
+                                    <span asp-validation-for="NewProgress" class="text-danger"></span>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label asp-for="Notes" class="form-label fw-bold">Notlar:</label>
+                                    <textarea asp-for="Notes" class="form-control" rows="4" placeholder="İlerleme hakkında notlarınızı buraya yazabilirsiniz..."></textarea>
+                                    <span asp-validation-for="Notes" class="text-danger"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-info-circle me-2"></i>Durum Açıklamaları</h6>
+                                    <ul class="mb-0">
+                                        <li><strong>Atandı:</strong> Talep size atandı, henüz başlamadınız</li>
+                                        <li><strong>İnceleniyor:</strong> Talebi inceliyorsunuz</li>
+                                        <li><strong>Test Ediliyor:</strong> Çözümü test ediyorsunuz</li>
+                                        <li><strong>Tamamlandı:</strong> İşlem tamamlandı</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="alert alert-warning">
+                                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Önemli</h6>
+                                    <p class="mb-0">Durum güncellemesi yaptığınızda, talep durumu da otomatik olarak güncellenecektir.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="@Url.Action("MyAssignments", "Assignment")" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left me-1"></i>İptal
+                                    </a>
+                                    <button type="submit" class="btn btn-success" onclick="return confirmUpdate()">
+                                        <i class="fas fa-save me-1"></i>Güncelle
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmUpdate() {
+            var newProgress = document.getElementById('NewProgress').value;
+            
+            if (!newProgress) {
+                alert('Lütfen yeni durum seçin!');
+                return false;
+            }
+            
+            return confirm('İlerleme durumunu güncellemek istediğinizden emin misiniz?');
+        }
+    </script>
+}

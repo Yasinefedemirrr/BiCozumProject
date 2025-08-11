@@ -1,0 +1,90 @@
+@model WebUI.Models.AssignmentDetailViewModel
+@{
+    ViewData["Title"] = "Atama Detayları";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Atama Detayları
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="text-primary">Talep Bilgileri</h5>
+                            <hr>
+                            <div class="mb-3">
+                                <label class="fw-bold">Talep Başlığı:</label>
+                                <p class="text-muted">@Model.ComplaintTitle</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="fw-bold">Talep Açıklaması:</label>
+                                <p class="text-muted">@Model.ComplaintDescription</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="fw-bold">Müdürlük:</label>
+                                <span class="badge bg-info">@Model.DepartmentName</span>
+                            </div>
+                            <div class="mb-3">
+                                <label class="fw-bold">Talep Tarihi:</label>
+                                <p class="text-muted">
+                                    <i class="fas fa-calendar-alt me-1"></i>
+                                    @Model.ComplaintCreatedAt.ToString("dd.MM.yyyy HH:mm")
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="text-success">Atama Bilgileri</h5>
+                            <hr>
+                            <div class="mb-3">
+                                <label class="fw-bold">Atanan Personel:</label>
+                                <p class="text-muted">
+                                    <i class="fas fa-user-tie me-1"></i>
+                                    @Model.UserFullName
+                                </p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="fw-bold">Atama Tarihi:</label>
+                                <p class="text-muted">
+                                    <i class="fas fa-calendar-check me-1"></i>
+                                    @Model.AssignedAt.ToString("dd.MM.yyyy HH:mm")
+                                </p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="fw-bold">Mevcut Durum:</label>
+                                @{
+                                    var progressClass = Model.Progress switch
+                                    {
+                                        "Atandı" => "bg-secondary",
+                                        "İnceleniyor" => "bg-warning",
+                                        "Test Ediliyor" => "bg-info",
+                                        "Tamamlandı" => "bg-success",
+                                        _ => "bg-secondary"
+                                    };
+                                }
+                                <span class="badge @progressClass">@Model.Progress</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between">
+                                <a href="@Url.Action("MyAssignments", "Assignment")" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i>Geri Dön
+                                </a>
+                                <a href="@Url.Action("UpdateProgress", "Assignment", new { id = Model.Id })" class="btn btn-primary">
+                                    <i class="fas fa-edit me-1"></i>İlerleme Güncelle
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

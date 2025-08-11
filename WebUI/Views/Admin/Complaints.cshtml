@@ -205,28 +205,25 @@
                 <h5 class="modal-title" id="assignModalLabel">Personel Ata</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="assignForm" method="post" action="@Url.Action("AssignPersonnel", "Admin")">
-                <div class="modal-body">
-                    <input type="hidden" id="complaintId" name="ComplaintId" />
-                    <div class="mb-3">
-                        <label for="complaintTitle" class="form-label">Talep Başlığı</label>
-                        <input type="text" class="form-control" id="complaintTitle" readonly />
-                    </div>
-                    <div class="mb-3">
-                        <label for="userId" class="form-label">Personel Seçin</label>
-                        <select class="form-select" id="userId" name="UserId" required>
-                            <option value="">Personel seçin...</option>
-                            <option value="13">Test Personnel - Bilgi İşlem</option>
-                        </select>
-                    </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="complaintTitle" class="form-label">Talep Başlığı</label>
+                    <input type="text" class="form-control" id="complaintTitle" readonly />
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-user-plus me-1"></i>Personel Ata
-                    </button>
+                <div class="mb-3">
+                    <label for="userId" class="form-label">Personel Seçin</label>
+                    <select class="form-select" id="userId" required>
+                        <option value="">Personel seçin...</option>
+                        <option value="13">Test Personnel - Bilgi İşlem</option>
+                    </select>
                 </div>
-            </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-success" onclick="assignPersonnel()">
+                    <i class="fas fa-user-plus me-1"></i>Personel Ata
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -272,44 +269,59 @@
             
             // DataTable initialization - destroy existing instance first
             if ($.fn.DataTable.isDataTable('#complaintsTable')) {
-                $('#complaintsTable').DataTable().destroy();
+                try {
+                    $('#complaintsTable').DataTable().destroy();
+                } catch (e) {
+                    console.log('DataTable destroy error:', e);
+                }
             }
             
-            var table = $('#complaintsTable').DataTable({
-                language: {
-                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/tr.json'
-                },
-                responsive: true,
-                pageLength: 25,
-                order: [[6, 'desc']], // Sort by date descending
-                columnDefs: [
-                    {
-                        targets: -1,
-                        orderable: false,
-                        searchable: false
-                    }
-                ]
-            });
+            // Check if table exists before initializing
+            if ($('#complaintsTable').length > 0) {
+                var table = $('#complaintsTable').DataTable({
+                    language: {
+                        url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/tr.json'
+                    },
+                    responsive: true,
+                    pageLength: 25,
+                    order: [[6, 'desc']], // Sort by date descending
+                    columnDefs: [
+                        {
+                            targets: -1,
+                            orderable: false,
+                            searchable: false
+                        }
+                    ]
+                });
+            }
             
             // Filter buttons
             $('#filterAll').click(function() {
-                table.column(4).search('').draw();
-                updateActiveFilter($(this));
+                if (typeof table !== 'undefined') {
+                    table.column(4).search('').draw();
+                    updateActiveFilter($(this));
+                }
             });
             
             $('#filterPending').click(function() {
-                table.column(4).search('beklemede').draw();
-                updateActiveFilter($(this));
+                if (typeof table !== 'undefined') {
+                    table.column(4).search('beklemede').draw();
+                    updateActiveFilter($(this));
+                }
             });
             
             $('#filterAssigned').click(function() {
-                table.column(4).search('atandı').draw();
-                updateActiveFilter($(this));
+                if (typeof table !== 'undefined') {
+                    table.column(4).search('atandı').draw();
+                    updateActiveFilter($(this));
+                }
             });
             
             $('#filterCompleted').click(function() {
-                table.column(4).search('tamamlandı').draw();
-                updateActiveFilter($(this));
+                if (typeof table !== 'undefined') {
+                    table.column(4).search('tamamlandı').draw();
+                    updateActiveFilter($(this));
+                }
             });
             
             function updateActiveFilter(activeButton) {
@@ -331,8 +343,14 @@
                 var complaintId = button.data('complaint-id');
                 var complaintTitle = button.data('complaint-title');
                 
-                $('#complaintId').val(complaintId);
+                console.log('Modal opening - Complaint ID:', complaintId, 'Title:', complaintTitle);
+                
+                // Store complaint ID for assign function
+                $('#assignModal').data('complaint-id', complaintId);
                 $('#complaintTitle').val(complaintTitle);
+                
+                // Reset dropdown
+                $('#userId').val('');
             });
             
             $('#progressModal').on('show.bs.modal', function (event) {
@@ -343,6 +361,57 @@
                 $('#progressModal').data('complaint-id', complaintId);
             });
         });
+        
+        function assignPersonnel() {
+            var complaintId = $('#assignModal').data('complaint-id');
+            var userId = $('#userId').val();
+            
+            console.log('Assigning personnel - Complaint ID:', complaintId, 'User ID:', userId);
+            
+            if (!userId) {
+                Swal.fire({
+                    title: 'Hata',
+                    text: 'Lütfen bir personel seçin!',
+                    icon: 'error',
+                    confirmButtonText: 'Tamam'
+                });
+                return;
+            }
+            
+            if (!complaintId) {
+                Swal.fire({
+                    title: 'Hata',
+                    text: 'Talep bilgisi bulunamadı!',
+                    icon: 'error',
+                    confirmButtonText: 'Tamam'
+                });
+                return;
+            }
+            
+            // Show confirmation
+            Swal.fire({
+                title: 'Personel Ata',
+                text: 'Bu talebe personel atamak istediğinizden emin misiniz?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Evet, Ata',
+                cancelButtonText: 'İptal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Close modal first
+                    $('#assignModal').modal('hide');
+                    
+                    // Submit form
+                    var form = $('<form method="post" action="@Url.Action("AssignPersonnel", "Admin")"></form>');
+                    form.append('<input type="hidden" name="complaintId" value="' + complaintId + '" />');
+                    form.append('<input type="hidden" name="userId" value="' + userId + '" />');
+                    $('body').append(form);
+                    form.submit();
+                }
+            });
+        }
         
         function approveProgress() {
             var complaintId = $('#progressModal').data('complaint-id');
