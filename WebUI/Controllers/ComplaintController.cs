@@ -214,6 +214,55 @@ namespace WebUI.Controllers
                 return RedirectToAction("MyComplaints");
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> OldComplaints()
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            try
+            {
+                // Get current user from session
+                var currentUserId = HttpContext.Session.GetString("CurrentUserId");
+                if (string.IsNullOrEmpty(currentUserId))
+                {
+                    TempData["Error"] = "Kullanıcı bilgisi bulunamadı!";
+                    return View(new List<ComplaintViewModel>());
+                }
+
+                // Get old complaints (completed or older than 30 days) from database
+                var thirtyDaysAgo = DateTime.Now.AddDays(-30);
+                var complaints = await _context.Complaints
+                    .Include(c => c.Department)
+                    .Include(c => c.Assignments)
+                        .ThenInclude(a => a.User)
+                    .Where(c => c.UserId == int.Parse(currentUserId) && 
+                               (c.Status == "İşlem Tamamlandı" || c.CreatedAt < thirtyDaysAgo))
+                    .OrderByDescending(c => c.CreatedAt)
+                    .ToListAsync();
+
+                var complaintViewModels = complaints.Select(c => new ComplaintViewModel
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    Description = c.Description,
+                    Status = c.Status,
+                    CreatedAt = c.CreatedAt,
+                    DepartmentName = c.Department?.Name ?? "Bilinmeyen Müdürlük",
+                    AssignedPersonnel = c.Assignments?.FirstOrDefault()?.User?.FullName
+                }).ToList();
+
+                return View(complaintViewModels);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Eski talepler yüklenirken bir hata oluştu: " + ex.Message;
+                return View(new List<ComplaintViewModel>());
+            }
+        }
     }
 
 

@@ -6,16 +6,21 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using WebUI.Models;
+using Microsoft.EntityFrameworkCore;
+using Persistance.Context;
+using Domain.Entity;
 
 namespace WebUI.Controllers
 {
     public class AccountController : Controller
     {
+        private readonly BiCozumContext _context;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
 
-        public AccountController(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public AccountController(BiCozumContext context, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
+            _context = context;
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
         }
@@ -43,145 +48,60 @@ namespace WebUI.Controllers
                 // Debug için log ekleyelim
                 System.Diagnostics.Debug.WriteLine($"Login attempt: {model.Username}");
 
-                // Temporary mock login for testing when API is not available
-                if (model.Username == "admin" && model.Password == "admin")
-                {
-                    // Session'a bilgileri kaydet
-                    HttpContext.Session.SetString("JWTToken", "mock-token-admin");
-                    HttpContext.Session.SetString("UserRole", "Admin");
-                    HttpContext.Session.SetString("UserName", "admin");
-                    HttpContext.Session.SetString("CurrentUserId", "11"); // Admin user ID
-                    
-                    // Authentication cookie oluştur
-                    var claims = new List<Claim>
-                    {
-                        new Claim(ClaimTypes.Name, "admin"),
-                        new Claim(ClaimTypes.Role, "Admin"),
-                        new Claim("UserName", "admin")
-                    };
-                    
-                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                    var authProperties = new AuthenticationProperties
-                    {
-                        IsPersistent = model.RememberMe,
-                        ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30)
-                    };
-                    
-                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, 
-                        new ClaimsPrincipal(claimsIdentity), authProperties);
-                    
-                    TempData["Success"] = "Başarıyla giriş yaptınız!";
-                    System.Diagnostics.Debug.WriteLine("Admin login successful, redirecting to Dashboard");
-                    return RedirectToAction("Dashboard", "Admin");
-                }
-                else if (model.Username == "user" && model.Password == "user")
-                {
-                    // Session'a bilgileri kaydet
-                    HttpContext.Session.SetString("JWTToken", "mock-token-user");
-                    HttpContext.Session.SetString("UserRole", "User");
-                    HttpContext.Session.SetString("UserName", "user");
-                    HttpContext.Session.SetString("CurrentUserId", "12"); // User ID
-                    
-                    // Authentication cookie oluştur
-                    var claims = new List<Claim>
-                    {
-                        new Claim(ClaimTypes.Name, "user"),
-                        new Claim(ClaimTypes.Role, "User"),
-                        new Claim("UserName", "user")
-                    };
-                    
-                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                    var authProperties = new AuthenticationProperties
-                    {
-                        IsPersistent = model.RememberMe,
-                        ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30)
-                    };
-                    
-                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, 
-                        new ClaimsPrincipal(claimsIdentity), authProperties);
-                    
-                    TempData["Success"] = "Başarıyla giriş yaptınız!";
-                    System.Diagnostics.Debug.WriteLine("User login successful, redirecting to Create Complaint");
-                    return RedirectToAction("Create", "Complaint");
-                }
-                else if (model.Username == "personnel" && model.Password == "personnel")
-                {
-                    // Session'a bilgileri kaydet
-                    HttpContext.Session.SetString("JWTToken", "mock-token-personnel");
-                    HttpContext.Session.SetString("UserRole", "Personnel");
-                    HttpContext.Session.SetString("UserName", "personnel");
-                    HttpContext.Session.SetString("CurrentUserId", "13"); // Personnel ID
-                    
-                    // Authentication cookie oluştur
-                    var claims = new List<Claim>
-                    {
-                        new Claim(ClaimTypes.Name, "personnel"),
-                        new Claim(ClaimTypes.Role, "Personnel"),
-                        new Claim("UserName", "personnel")
-                    };
-                    
-                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                    var authProperties = new AuthenticationProperties
-                    {
-                        IsPersistent = model.RememberMe,
-                        ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30)
-                    };
-                    
-                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, 
-                        new ClaimsPrincipal(claimsIdentity), authProperties);
-                    
-                    TempData["Success"] = "Başarıyla giriş yaptınız!";
-                    System.Diagnostics.Debug.WriteLine("Personnel login successful, redirecting to MyAssignments");
-                    return RedirectToAction("MyAssignments", "Assignment");
-                }
+                // Veritabanından kullanıcıyı kontrol et
+                var user = await _context.Users
+                    .Include(u => u.AppRole)
+                    .FirstOrDefaultAsync(u => u.Username == model.Username);
 
-                // Original API call (commented out for now)
-                /*
-                var loginData = new
-                {
-                    Username = model.Username,
-                    Password = model.Password
-                };
-
-                var json = JsonSerializer.Serialize(loginData);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                var response = await _httpClient.PostAsync("/api/Login", content);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var responseContent = await response.Content.ReadAsStringAsync();
-                    var loginResult = JsonSerializer.Deserialize<LoginResponse>(responseContent);
-
-                    // Store token in session or cookie
-                    HttpContext.Session.SetString("JWTToken", loginResult.Token);
-                    HttpContext.Session.SetString("UserRole", loginResult.Role);
-                    HttpContext.Session.SetString("UserName", loginResult.Username);
-
-                    TempData["Success"] = "Başarıyla giriş yaptınız!";
-
-                    // Redirect based on role
-                    return loginResult.Role switch
-                    {
-                        "Admin" => RedirectToAction("Dashboard", "Admin"),
-                        "Personnel" => RedirectToAction("MyAssignments", "Assignment"),
-                        "User" => RedirectToAction("Create", "Complaint"),
-                        _ => RedirectToAction("Index", "Home")
-                    };
-                }
-                else
+                if (user == null || user.PasswordHash != model.Password)
                 {
                     ModelState.AddModelError("", "Kullanıcı adı veya şifre hatalı!");
                     return View(model);
                 }
-                */
 
-                ModelState.AddModelError("", "Kullanıcı adı veya şifre hatalı!");
-                return View(model);
+                // Session'a bilgileri kaydet
+                HttpContext.Session.SetString("JWTToken", $"token-{user.Id}");
+                HttpContext.Session.SetString("UserRole", user.AppRole.AppRoleName);
+                HttpContext.Session.SetString("UserName", user.Username);
+                HttpContext.Session.SetString("CurrentUserId", user.Id.ToString());
+                HttpContext.Session.SetString("UserFullName", user.FullName);
+
+                // Authentication cookie oluştur
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, user.Username),
+                    new Claim(ClaimTypes.Role, user.AppRole.AppRoleName),
+                    new Claim("UserName", user.Username),
+                    new Claim("UserId", user.Id.ToString()),
+                    new Claim("UserFullName", user.FullName)
+                };
+
+                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var authProperties = new AuthenticationProperties
+                {
+                    IsPersistent = model.RememberMe,
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30)
+                };
+
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(claimsIdentity), authProperties);
+
+                TempData["Success"] = "Başarıyla giriş yaptınız!";
+                System.Diagnostics.Debug.WriteLine($"Login successful for {user.Username} with role {user.AppRole.AppRoleName}");
+
+                // Role ID'sine göre yönlendirme
+                return user.AppRoleId switch
+                {
+                    1 => RedirectToAction("Dashboard", "Admin"),        // Admin
+                    2 => RedirectToAction("Create", "Complaint"),       // User
+                    3 => RedirectToAction("MyAssignments", "Assignment"), // Personnel
+                    _ => RedirectToAction("Index", "Home")
+                };
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", "Giriş yapılırken bir hata oluştu: " + ex.Message);
+                System.Diagnostics.Debug.WriteLine($"Login error: {ex.Message}");
                 return View(model);
             }
         }
@@ -206,7 +126,8 @@ namespace WebUI.Controllers
             var profileModel = new ProfileViewModel
             {
                 Username = HttpContext.Session.GetString("UserName"),
-                Role = HttpContext.Session.GetString("UserRole")
+                Role = HttpContext.Session.GetString("UserRole"),
+                FullName = HttpContext.Session.GetString("UserFullName")
             };
 
             return View(profileModel);

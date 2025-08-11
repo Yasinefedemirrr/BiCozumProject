@@ -1,0 +1,513 @@
+@model List<WebUI.Models.AdminUserViewModel>
+@{
+    ViewData["Title"] = "Kullanıcı Yönetimi";
+    
+    var adminUsers = Model.Where(u => u.Role == "Admin").ToList();
+    var userUsers = Model.Where(u => u.Role == "User").ToList();
+    var personnelUsers = Model.Where(u => u.Role == "Personnel").ToList();
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-users me-2"></i>Kullanıcı Yönetimi
+                    </h4>
+                    <div>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                            <i class="fas fa-plus me-2"></i>Yeni Kullanıcı
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <!-- Admin Kullanıcıları -->
+                    <div class="mb-5">
+                        <h5 class="text-danger mb-3">
+                            <i class="fas fa-shield-alt me-2"></i>Admin Kullanıcıları (@adminUsers.Count)
+                        </h5>
+                        @if (adminUsers.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped">
+                                    <thead class="table-danger">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Ad Soyad</th>
+                                            <th>Kullanıcı Adı</th>
+                                            <th>Müdürlük</th>
+                                            <th>Toplam Talep</th>
+                                            <th>İşlemler</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var user in adminUsers)
+                                        {
+                                            <tr>
+                                                <td><span class="badge bg-secondary">#@user.Id</span></td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="avatar-sm me-3">
+                                                            <div class="avatar-title bg-danger rounded-circle">
+                                                                <i class="fas fa-shield-alt text-white"></i>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-0">@user.FullName</h6>
+                                                            <small class="text-muted">@user.Username</small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td><span class="text-muted">@user.Username</span></td>
+                                                <td>
+                                                    @if (!string.IsNullOrEmpty(user.DepartmentName) && user.DepartmentName != "Atanmamış")
+                                                    {
+                                                        <span class="badge bg-info">@user.DepartmentName</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">Atanmamış</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <span class="badge bg-warning me-2">@user.TotalComplaints</span>
+                                                        <small class="text-muted">talep</small>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group" role="group">
+                                                        <button type="button" class="btn btn-outline-primary btn-sm" 
+                                                                onclick="viewUserDetails(@user.Id)" title="Detaylar">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-warning btn-sm" 
+                                                                onclick="editUser(@user.Id)" title="Düzenle">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-3">
+                                <i class="fas fa-shield-alt fa-2x text-muted mb-2"></i>
+                                <p class="text-muted mb-0">Henüz admin kullanıcısı bulunmuyor</p>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Kullanıcılar -->
+                    <div class="mb-5">
+                        <h5 class="text-primary mb-3">
+                            <i class="fas fa-user me-2"></i>Kullanıcılar (@userUsers.Count)
+                        </h5>
+                        @if (userUsers.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped">
+                                    <thead class="table-primary">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Ad Soyad</th>
+                                            <th>Kullanıcı Adı</th>
+                                            <th>Müdürlük</th>
+                                            <th>Toplam Talep</th>
+                                            <th>İşlemler</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var user in userUsers)
+                                        {
+                                            <tr>
+                                                <td><span class="badge bg-secondary">#@user.Id</span></td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="avatar-sm me-3">
+                                                            <div class="avatar-title bg-primary rounded-circle">
+                                                                <i class="fas fa-user text-white"></i>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-0">@user.FullName</h6>
+                                                            <small class="text-muted">@user.Username</small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td><span class="text-muted">@user.Username</span></td>
+                                                <td>
+                                                    @if (!string.IsNullOrEmpty(user.DepartmentName) && user.DepartmentName != "Atanmamış")
+                                                    {
+                                                        <span class="badge bg-info">@user.DepartmentName</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">Atanmamış</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <span class="badge bg-warning me-2">@user.TotalComplaints</span>
+                                                        <small class="text-muted">talep</small>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group" role="group">
+                                                        <button type="button" class="btn btn-outline-primary btn-sm" 
+                                                                onclick="viewUserDetails(@user.Id)" title="Detaylar">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-warning btn-sm" 
+                                                                onclick="editUser(@user.Id)" title="Düzenle">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                                onclick="deleteUser(@user.Id, '@user.FullName')" title="Sil">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-3">
+                                <i class="fas fa-user fa-2x text-muted mb-2"></i>
+                                <p class="text-muted mb-0">Henüz kullanıcı bulunmuyor</p>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Personel -->
+                    <div class="mb-5">
+                        <h5 class="text-success mb-3">
+                            <i class="fas fa-user-tie me-2"></i>Personel (@personnelUsers.Count)
+                        </h5>
+                        @if (personnelUsers.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped">
+                                    <thead class="table-success">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Ad Soyad</th>
+                                            <th>Kullanıcı Adı</th>
+                                            <th>Müdürlük</th>
+                                            <th>Aktif Görev</th>
+                                            <th>İşlemler</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var user in personnelUsers)
+                                        {
+                                            <tr>
+                                                <td><span class="badge bg-secondary">#@user.Id</span></td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="avatar-sm me-3">
+                                                            <div class="avatar-title bg-success rounded-circle">
+                                                                <i class="fas fa-user-tie text-white"></i>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-0">@user.FullName</h6>
+                                                            <small class="text-muted">@user.Username</small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td><span class="text-muted">@user.Username</span></td>
+                                                <td>
+                                                    @if (!string.IsNullOrEmpty(user.DepartmentName) && user.DepartmentName != "Atanmamış")
+                                                    {
+                                                        <span class="badge bg-info">@user.DepartmentName</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">Atanmamış</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <span class="badge bg-info me-2">@user.ActiveAssignments</span>
+                                                        <small class="text-muted">görev</small>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group" role="group">
+                                                        <button type="button" class="btn btn-outline-primary btn-sm" 
+                                                                onclick="viewUserDetails(@user.Id)" title="Detaylar">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-warning btn-sm" 
+                                                                onclick="editUser(@user.Id)" title="Düzenle">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                                onclick="deleteUser(@user.Id, '@user.FullName')" title="Sil">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-3">
+                                <i class="fas fa-user-tie fa-2x text-muted mb-2"></i>
+                                <p class="text-muted mb-0">Henüz personel bulunmuyor</p>
+                            </div>
+                        }
+                    </div>
+
+                    @if (!Model.Any())
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Henüz kullanıcı bulunmuyor</h5>
+                            <p class="text-muted">Yeni kullanıcı eklemek için yukarıdaki butonu kullanın.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Kullanıcı Detay Modal -->
+<div class="modal fade" id="userDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user me-2"></i>Kullanıcı Detayları
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="userDetailContent">
+                <!-- İçerik JavaScript ile doldurulacak -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Kullanıcı Ekleme Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-plus me-2"></i>Yeni Kullanıcı Ekle
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addUserForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="fullName" class="form-label">Ad Soyad</label>
+                        <input type="text" class="form-control" id="fullName" name="fullName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Kullanıcı Adı</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Şifre</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Rol</label>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="">Rol Seçin</option>
+                            <option value="User">Kullanıcı</option>
+                            <option value="Personnel">Personel</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="department" class="form-label">Müdürlük</label>
+                        <select class="form-select" id="department" name="department">
+                            <option value="">Müdürlük Seçin</option>
+                            <!-- Müdürlükler JavaScript ile doldurulacak -->
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Kullanıcı detaylarını görüntüle
+    function viewUserDetails(userId) {
+        // Bu fonksiyon AJAX ile kullanıcı detaylarını getirecek
+        fetch(`/Admin/UserDetails/${userId}`)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('userDetailContent').innerHTML = html;
+                new bootstrap.Modal(document.getElementById('userDetailModal')).show();
+            })
+            .catch(error => {
+                console.error('Hata:', error);
+                alert('Kullanıcı detayları yüklenirken bir hata oluştu.');
+            });
+    }
+
+    // Kullanıcı düzenle
+    function editUser(userId) {
+        // Bu fonksiyon kullanıcı düzenleme modalını açacak
+        alert('Kullanıcı düzenleme özelliği yakında eklenecek.');
+    }
+
+    // Kullanıcı sil
+    function deleteUser(userId, userName) {
+        if (confirm(`"${userName}" kullanıcısını silmek istediğinizden emin misiniz?`)) {
+            fetch(`/Admin/DeleteUser/${userId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Kullanıcı silinirken bir hata oluştu.');
+                }
+            })
+            .catch(error => {
+                console.error('Hata:', error);
+                alert('Kullanıcı silinirken bir hata oluştu.');
+            });
+        }
+    }
+
+    // Kullanıcı ekleme formu
+    document.getElementById('addUserForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const userData = {
+            fullName: formData.get('fullName'),
+            username: formData.get('username'),
+            password: formData.get('password'),
+            role: formData.get('role'),
+            departmentId: formData.get('department') ? parseInt(formData.get('department')) : null
+        };
+
+        fetch('/Admin/AddUser', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(userData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Modal'ı kapat
+                bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
+                // Sayfayı yenile
+                location.reload();
+            } else {
+                alert(data.message || 'Kullanıcı eklenirken bir hata oluştu.');
+            }
+        })
+        .catch(error => {
+            console.error('Hata:', error);
+            alert('Kullanıcı eklenirken bir hata oluştu.');
+        });
+    });
+
+    // Sayfa yüklendiğinde müdürlükleri yükle
+    document.addEventListener('DOMContentLoaded', function() {
+        // Müdürlükleri yükle
+        fetch('/Admin/GetDepartments')
+            .then(response => response.json())
+            .then(departments => {
+                const departmentSelect = document.getElementById('department');
+                departments.forEach(dept => {
+                    const option = document.createElement('option');
+                    option.value = dept.id;
+                    option.textContent = dept.name;
+                    departmentSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Müdürlükler yüklenirken hata:', error);
+            });
+    });
+</script>
+
+<style>
+    .avatar-sm {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .avatar-title {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }
+    
+    .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .btn-group .btn {
+        margin-right: 2px;
+    }
+    
+    .btn-group .btn:last-child {
+        margin-right: 0;
+    }
+
+    .table-striped > tbody > tr:nth-of-type(odd) > td {
+        background-color: rgba(0,0,0,.02);
+    }
+
+    .table-hover > tbody > tr:hover > td {
+        background-color: rgba(0,0,0,.075);
+    }
+</style>

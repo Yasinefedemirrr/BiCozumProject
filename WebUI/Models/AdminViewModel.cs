@@ -106,8 +106,16 @@ namespace WebUI.Models
         public string Username { get; set; }
         public string Role { get; set; }
         public string DepartmentName { get; set; }
-        public DateTime CreatedAt { get; set; }
         public int TotalComplaints { get; set; }
         public int ActiveAssignments { get; set; }
+    }
+
+    public class CreateUserViewModel
+    {
+        public string FullName { get; set; }
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public string Role { get; set; }
+        public int? DepartmentId { get; set; }
     }
 } 

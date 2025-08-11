@@ -1,0 +1,115 @@
+@model WebUI.Models.AdminUserViewModel
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-4">
+            <h6 class="text-primary mb-3">
+                <i class="fas fa-user me-2"></i>Kullanıcı Bilgileri
+            </h6>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Kullanıcı ID:</label>
+                    <div class="form-control-plaintext">
+                        <span class="badge bg-secondary fs-6">#@Model.Id</span>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Rol:</label>
+                    <div class="form-control-plaintext">
+                        @{
+                            var roleClass = Model.Role switch
+                            {
+                                "Admin" => "bg-danger",
+                                "User" => "bg-primary",
+                                "Personnel" => "bg-success",
+                                _ => "bg-secondary"
+                            };
+                        }
+                        <span class="badge @roleClass fs-6">@Model.Role</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Ad Soyad:</label>
+                <div class="form-control-plaintext fs-5">@Model.FullName</div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Kullanıcı Adı:</label>
+                <div class="form-control-plaintext">@Model.Username</div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Müdürlük:</label>
+                <div class="form-control-plaintext">
+                    @if (!string.IsNullOrEmpty(Model.DepartmentName) && Model.DepartmentName != "Atanmamış")
+                    {
+                        <span class="badge bg-info fs-6">@Model.DepartmentName</span>
+                    }
+                    else
+                    {
+                        <span class="text-muted">Atanmamış</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="mb-4">
+            <h6 class="text-primary mb-3">
+                <i class="fas fa-chart-bar me-2"></i>İstatistikler
+            </h6>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <div class="mb-2">
+                                <i class="fas fa-file-alt fa-2x"></i>
+                            </div>
+                            <h4 class="mb-0">@Model.TotalComplaints</h4>
+                            <small>Toplam Talep</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body text-center">
+                            <div class="mb-2">
+                                <i class="fas fa-tasks fa-2x"></i>
+                            </div>
+                            <h4 class="mb-0">@Model.ActiveAssignments</h4>
+                            <small>Aktif Görev</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <h6 class="text-primary mb-3">
+                <i class="fas fa-info-circle me-2"></i>Bilgi
+            </h6>
+            <div class="alert alert-info">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-user-check fa-2x me-3"></i>
+                    <div>
+                        <h6 class="mb-1">Kullanıcı aktif</h6>
+                        <small class="text-muted">Rol: @Model.Role</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-end">
+            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">
+                <i class="fas fa-times me-2"></i>Kapat
+            </button>
+            <button type="button" class="btn btn-warning" onclick="editUser(@Model.Id)">
+                <i class="fas fa-edit me-2"></i>Düzenle
+            </button>
+        </div>
+    </div>
+</div>

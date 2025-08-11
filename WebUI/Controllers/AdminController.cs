@@ -49,31 +49,23 @@ namespace WebUI.Controllers
                     })
                     .ToListAsync();
 
-                var dashboard = new DashboardViewModel
+                var dashboardViewModel = new DashboardViewModel
                 {
                     TotalComplaints = totalComplaints,
                     PendingComplaints = pendingComplaints,
                     CompletedComplaints = completedComplaints,
                     TotalUsers = totalUsers,
                     TotalPersonnel = totalPersonnel,
-                    MonthlyComplaints = new List<ChartData>
-                    {
-                        new ChartData { Month = "Ocak", Count = 5 },
-                        new ChartData { Month = "Şubat", Count = 8 },
-                        new ChartData { Month = "Mart", Count = 12 },
-                        new ChartData { Month = "Nisan", Count = 15 },
-                        new ChartData { Month = "Mayıs", Count = 10 },
-                        new ChartData { Month = "Haziran", Count = 7 }
-                    },
+                    MonthlyComplaints = new List<ChartData>(),
                     RecentComplaints = recentComplaints
                 };
 
-                return View(dashboard);
+                return View("Dashboard", dashboardViewModel);
             }
             catch (Exception ex)
             {
                 TempData["Error"] = "Dashboard verileri yüklenirken bir hata oluştu: " + ex.Message;
-                return View(new DashboardViewModel());
+                return View("Dashboard", new DashboardViewModel());
             }
         }
 
@@ -87,7 +79,6 @@ namespace WebUI.Controllers
 
             try
             {
-                // Get all complaints from database
                 var complaints = await _context.Complaints
                     .Include(c => c.Department)
                     .Include(c => c.User)
@@ -96,19 +87,20 @@ namespace WebUI.Controllers
                     .OrderByDescending(c => c.CreatedAt)
                     .ToListAsync();
 
-                var adminComplaints = complaints.Select(c => new AdminComplaintViewModel
+                var viewModel = complaints.Select(c => new AdminComplaintViewModel
                 {
                     Id = c.Id,
-                    Title = c.Title,
-                    Description = c.Description,
-                    Status = c.Status,
+                    Title = c.Title ?? "Başlık Yok",
+                    Description = c.Description ?? "Açıklama Yok",
                     CreatedAt = c.CreatedAt,
-                    DepartmentName = c.Department?.Name ?? "Bilinmeyen Müdürlük",
-                    UserFullName = c.User?.FullName ?? "Bilinmeyen Kullanıcı",
-                    AssignedPersonnel = c.Assignments != null && c.Assignments.Any() ? c.Assignments.First().User?.FullName ?? "Atanmamış" : "Atanmamış"
+                    Status = c.Status ?? "Durum Belirsiz",
+                    DepartmentName = c.Department?.Name ?? "Müdürlük Belirsiz",
+                    UserFullName = c.User?.FullName ?? "Kullanıcı Belirsiz",
+                    AssignedPersonnel = c.Assignments?.FirstOrDefault()?.User?.FullName ?? "Atanmamış",
+                    LastUpdate = c.Assignments?.OrderByDescending(a => a.AssignedAt).FirstOrDefault()?.AssignedAt
                 }).ToList();
 
-                return View(adminComplaints);
+                return View(viewModel);
             }
             catch (Exception ex)
             {
@@ -179,52 +171,29 @@ namespace WebUI.Controllers
         {
             try
             {
-                // Get complaint from database
                 var complaint = await _context.Complaints
-                    .Include(c => c.Department)
+                    .Include(c => c.Assignments)
                     .FirstOrDefaultAsync(c => c.Id == complaintId);
 
-                if (complaint == null)
-                {
-                    TempData["Error"] = "Talep bulunamadı!";
-                    return RedirectToAction("Complaints");
-                }
-
-                // Get personnel from database
                 var personnel = await _context.Users
-                    .Include(u => u.Department)
                     .FirstOrDefaultAsync(u => u.Id == userId);
 
-                if (personnel == null)
+                if (complaint == null || personnel == null)
                 {
-                    TempData["Error"] = "Personel bulunamadı!";
+                    TempData["Error"] = "Talep veya personel bulunamadı!";
                     return RedirectToAction("Complaints");
                 }
 
-                // Check if assignment already exists
-                var existingAssignment = await _context.Assignments
-                    .FirstOrDefaultAsync(a => a.ComplaintId == complaintId);
-
-                if (existingAssignment != null)
+                // Create new assignment
+                var assignment = new Assignment
                 {
-                    // Update existing assignment
-                    existingAssignment.UserId = userId;
-                    existingAssignment.AssignedAt = DateTime.Now;
-                    existingAssignment.Progress = "Atandı";
-                }
-                else
-                {
-                    // Create new assignment
-                    var assignment = new Assignment
-                    {
-                        ComplaintId = complaintId,
-                        UserId = userId,
-                        AssignedAt = DateTime.Now,
-                        Progress = "Atandı"
-                    };
+                    ComplaintId = complaint.Id,
+                    UserId = personnel.Id,
+                    AssignedAt = DateTime.Now,
+                    Progress = "Atandı"
+                };
 
-                    _context.Assignments.Add(assignment);
-                }
+                _context.Assignments.Add(assignment);
 
                 // Update complaint status
                 complaint.Status = "Personel Atandı";
@@ -285,10 +254,12 @@ namespace WebUI.Controllers
 
             try
             {
-                // Get all users from database
+                // Get all users from database with complaint counts
                 var users = await _context.Users
                     .Include(u => u.Department)
                     .Include(u => u.AppRole)
+                    .Include(u => u.Complaints)
+                    .Include(u => u.Assignments)
                     .OrderBy(u => u.FullName)
                     .Select(u => new AdminUserViewModel
                     {
@@ -296,7 +267,9 @@ namespace WebUI.Controllers
                         FullName = u.FullName,
                         Username = u.Username,
                         Role = u.AppRole.AppRoleName,
-                        DepartmentName = u.Department != null ? u.Department.Name : "Atanmamış"
+                        DepartmentName = u.Department != null ? u.Department.Name : "Atanmamış",
+                        TotalComplaints = u.Complaints != null ? u.Complaints.Count : 0,
+                        ActiveAssignments = u.Assignments != null ? u.Assignments.Count(a => a.Progress != "Tamamlandı") : 0
                     })
                     .ToListAsync();
 
@@ -306,6 +279,131 @@ namespace WebUI.Controllers
             {
                 TempData["Error"] = "Kullanıcılar yüklenirken bir hata oluştu: " + ex.Message;
                 return View(new List<AdminUserViewModel>());
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> UserDetails(int id)
+        {
+            try
+            {
+                var user = await _context.Users
+                    .Include(u => u.Department)
+                    .Include(u => u.AppRole)
+                    .Include(u => u.Complaints)
+                    .Include(u => u.Assignments)
+                        .ThenInclude(a => a.Complaint)
+                    .FirstOrDefaultAsync(u => u.Id == id);
+
+                if (user == null)
+                {
+                    return Content("<div class='alert alert-danger'>Kullanıcı bulunamadı!</div>");
+                }
+
+                var userDetails = new AdminUserViewModel
+                {
+                    Id = user.Id,
+                    FullName = user.FullName,
+                    Username = user.Username,
+                    Role = user.AppRole.AppRoleName,
+                    DepartmentName = user.Department != null ? user.Department.Name : "Atanmamış",
+                    TotalComplaints = user.Complaints != null ? user.Complaints.Count : 0,
+                    ActiveAssignments = user.Assignments != null ? user.Assignments.Count(a => a.Progress != "Tamamlandı") : 0
+                };
+
+                return PartialView("_UserDetails", userDetails);
+            }
+            catch (Exception ex)
+            {
+                return Content($"<div class='alert alert-danger'>Hata: {ex.Message}</div>");
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetDepartments()
+        {
+            try
+            {
+                var departments = await _context.Departments
+                    .Select(d => new { id = d.Id, name = d.Name })
+                    .ToListAsync();
+
+                return Json(departments);
+            }
+            catch (Exception ex)
+            {
+                return Json(new List<object>());
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddUser([FromBody] CreateUserViewModel model)
+        {
+            try
+            {
+                // Check if username already exists
+                var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == model.Username);
+                if (existingUser != null)
+                {
+                    return BadRequest("Bu kullanıcı adı zaten kullanılıyor.");
+                }
+
+                // Get role ID
+                var role = await _context.AppRoles.FirstOrDefaultAsync(r => r.AppRoleName == model.Role);
+                if (role == null)
+                {
+                    return BadRequest("Geçersiz rol.");
+                }
+
+                // Create new user
+                var user = new User
+                {
+                    FullName = model.FullName,
+                    Username = model.Username,
+                    PasswordHash = model.Password, // In production, hash the password
+                    AppRoleId = role.AppRoleId,
+                    DepartmentId = model.DepartmentId > 0 ? model.DepartmentId : null
+                };
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = $"Kullanıcı '{model.FullName}' başarıyla eklendi!";
+                return Json(new { success = true, message = "Kullanıcı başarıyla eklendi." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Kullanıcı eklenirken bir hata oluştu: {ex.Message}");
+            }
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            try
+            {
+                var user = await _context.Users
+                    .Include(u => u.AppRole)
+                    .FirstOrDefaultAsync(u => u.Id == id);
+                if (user == null)
+                {
+                    return NotFound("Kullanıcı bulunamadı.");
+                }
+
+                if (user.AppRole.AppRoleName == "Admin")
+                {
+                    return BadRequest("Admin kullanıcıları silinemez.");
+                }
+
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = $"Kullanıcı '{user.FullName}' başarıyla silindi!";
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Kullanıcı silinirken bir hata oluştu: {ex.Message}");
             }
         }
     }

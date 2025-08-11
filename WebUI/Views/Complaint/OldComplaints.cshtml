@@ -1,6 +1,6 @@
 @model List<WebUI.Models.ComplaintViewModel>
 @{
-    ViewData["Title"] = "Taleplerim";
+    ViewData["Title"] = "Eski Taleplerim";
 }
 
 <div class="container-fluid py-4">
@@ -9,14 +9,14 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">
-                        <i class="fas fa-list me-2"></i>Taleplerim
+                        <i class="fas fa-history me-2"></i>Eski Taleplerim
                     </h4>
                     <div>
-                        <a href="@Url.Action("OldComplaints")" class="btn btn-outline-secondary me-2">
-                            <i class="fas fa-history me-2"></i>Eski Taleplerim
-                        </a>
-                        <a href="@Url.Action("Create")" class="btn btn-primary">
+                        <a href="@Url.Action("Create")" class="btn btn-primary me-2">
                             <i class="fas fa-plus me-2"></i>Yeni Talep
+                        </a>
+                        <a href="@Url.Action("MyComplaints")" class="btn btn-outline-secondary">
+                            <i class="fas fa-list me-2"></i>Aktif Taleplerim
                         </a>
                     </div>
                 </div>
@@ -24,15 +24,15 @@
                     @if (Model != null && Model.Any())
                     {
                         <div class="table-responsive">
-                            <table class="table table-hover datatable">
-                                <thead>
+                            <table class="table table-hover">
+                                <thead class="table-light">
                                     <tr>
                                         <th>Talep No</th>
                                         <th>Başlık</th>
                                         <th>Müdürlük</th>
                                         <th>Durum</th>
                                         <th>Tarih</th>
-                                        <th>Son Güncelleme</th>
+                                        <th>Atanan Personel</th>
                                         <th>İşlemler</th>
                                     </tr>
                                 </thead>
@@ -55,9 +55,9 @@
                                                 @{
                                                     var statusClass = complaint.Status switch
                                                     {
-                                                        "Beklemede" => "bg-warning",
-                                                        "Atandı" => "bg-info",
-                                                        "Tamamlandı" => "bg-success",
+                                                        "Talep Alındı" => "bg-warning",
+                                                        "Personel Atandı" => "bg-info",
+                                                        "İşlem Tamamlandı" => "bg-success",
                                                         "İptal" => "bg-danger",
                                                         _ => "bg-secondary"
                                                     };
@@ -65,18 +65,18 @@
                                                 <span class="badge @statusClass">@complaint.Status</span>
                                             </td>
                                             <td>
-                                                <i class="fas fa-calendar-alt me-1"></i>
-                                                @complaint.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                                                <small class="text-muted">
+                                                    @complaint.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                                                </small>
                                             </td>
                                             <td>
-                                                @if (complaint.LastUpdate.HasValue)
+                                                @if (!string.IsNullOrEmpty(complaint.AssignedPersonnel))
                                                 {
-                                                    <i class="fas fa-clock me-1"></i>
-                                                    @complaint.LastUpdate.Value.ToString("dd.MM.yyyy HH:mm")
+                                                    <span class="badge bg-primary">@complaint.AssignedPersonnel</span>
                                                 }
                                                 else
                                                 {
-                                                    <span class="text-muted">-</span>
+                                                    <span class="text-muted">Atanmamış</span>
                                                 }
                                             </td>
                                             <td>
@@ -87,16 +87,6 @@
                                                        title="Detayları Görüntüle">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
-                                                    @if (complaint.Status == "Beklemede")
-                                                    {
-                                                        <button class="btn btn-sm btn-outline-danger btn-delete" 
-                                                                data-url="@Url.Action("Delete", new { id = complaint.Id })"
-                                                                data-item-name="Bu talebi"
-                                                                data-bs-toggle="tooltip" 
-                                                                title="Talebi İptal Et">
-                                                            <i class="fas fa-times"></i>
-                                                        </button>
-                                                    }
                                                 </div>
                                             </td>
                                         </tr>
@@ -108,11 +98,11 @@
                     else
                     {
                         <div class="text-center py-5">
-                            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
-                            <h5 class="text-muted">Henüz talep oluşturmamışsınız</h5>
-                            <p class="text-muted">İlk talebinizi oluşturmak için aşağıdaki butona tıklayınız.</p>
+                            <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Henüz Eski Talebiniz Bulunmuyor</h5>
+                            <p class="text-muted">Tamamlanan veya 30 günden eski talepleriniz burada görüntülenecektir.</p>
                             <a href="@Url.Action("Create")" class="btn btn-primary">
-                                <i class="fas fa-plus me-2"></i>İlk Talebimi Oluştur
+                                <i class="fas fa-plus me-2"></i>Yeni Talep Oluştur
                             </a>
                         </div>
                     }
@@ -120,36 +110,17 @@
             </div>
         </div>
     </div>
-    
-    <!-- İstatistikler -->
+
     @if (Model != null && Model.Any())
     {
         <div class="row mt-4">
             <div class="col-md-3">
                 <div class="dashboard-card text-center">
                     <div class="card-icon">
-                        <i class="fas fa-list"></i>
+                        <i class="fas fa-history"></i>
                     </div>
                     <div class="card-number">@Model.Count</div>
-                    <div class="card-title">Toplam Talep</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="dashboard-card text-center">
-                    <div class="card-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="card-number">@Model.Count(c => c.Status == "Beklemede")</div>
-                    <div class="card-title">Bekleyen</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="dashboard-card text-center">
-                    <div class="card-icon">
-                        <i class="fas fa-cogs"></i>
-                    </div>
-                    <div class="card-number">@Model.Count(c => c.Status == "Atandı")</div>
-                    <div class="card-title">İşlemde</div>
+                    <div class="card-title">Toplam Eski Talep</div>
                 </div>
             </div>
             <div class="col-md-3">
@@ -157,44 +128,60 @@
                     <div class="card-icon">
                         <i class="fas fa-check-circle"></i>
                     </div>
-                    <div class="card-number">@Model.Count(c => c.Status == "Tamamlandı")</div>
+                    <div class="card-number">@Model.Count(c => c.Status == "İşlem Tamamlandı")</div>
                     <div class="card-title">Tamamlanan</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card text-center">
+                    <div class="card-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="card-number">@Model.Count(c => c.CreatedAt < DateTime.Now.AddDays(-30))</div>
+                    <div class="card-title">30+ Günlük</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card text-center">
+                    <div class="card-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="card-number">@Model.Count(c => !string.IsNullOrEmpty(c.AssignedPersonnel))</div>
+                    <div class="card-title">Personel Atanmış</div>
                 </div>
             </div>
         </div>
     }
 </div>
 
-@section Scripts {
-    <script>
-        $(document).ready(function() {
-            // Initialize tooltips
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
-            
-            // DataTable initialization
-            $('.datatable').DataTable({
-                language: {
-                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/tr.json'
-                },
-                responsive: true,
-                pageLength: 10,
-                order: [[4, 'desc']], // Sort by date descending
-                columnDefs: [
-                    {
-                        targets: -1,
-                        orderable: false,
-                        searchable: false
-                    }
-                ]
-            });
-            
-            // Status color animation
-            $('.badge').each(function() {
-                $(this).addClass('fade-in');
-            });
-        });
-    </script>
-} 
+<style>
+    .dashboard-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .card-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        opacity: 0.8;
+    }
+
+    .card-number {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .card-title {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+</style>
